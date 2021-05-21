@@ -15,7 +15,14 @@
 package annotations
 
 import (
+	"fmt"
 	"strings"
+
+	configv1 "github.com/apache/apisix-ingress-controller/pkg/kube/apisix/apis/config/v1"
+	"github.com/apache/apisix-ingress-controller/pkg/log"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
+	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 )
 
 // Extractor encapsulates some auxiliary methods to extract annotations.
@@ -46,6 +53,9 @@ type Handler interface {
 
 type extractor struct {
 	annotations map[string]string
+	namespace   string
+	name        string
+	port        int
 }
 
 func (e *extractor) GetStringAnnotation(name string) string {
@@ -65,8 +75,39 @@ func (e *extractor) GetBoolAnnotation(name string) bool {
 }
 
 // NewExtractor creates an annotations extractor.
-func NewExtractor(annotations map[string]string) Extractor {
+func NewExtractor(ing interface{}) Extractor {
+
+	var (
+		annotations map[string]string
+		namespace   string
+		name        string
+		port        int
+	)
+
+	switch v := ing.(type) {
+	case *networkingv1.Ingress:
+		annotations = ing.(*networkingv1.Ingress).Annotations
+		namespace = ing.(*networkingv1.Ingress).Namespace
+		name = ing.(*networkingv1.Ingress).Name
+		fmt.Printf("%T", v)
+	case *networkingv1beta1.Ingress:
+		extractor = annotations.NewExtractor(ing.(*networkingv1beta1.Ingress).Annotations, ing.(*networkingv1beta1.Ingress).Namespace, ing.(*networkingv1beta1.Ingress).Name)
+		fmt.Printf("%T", v)
+	case *extensionsv1beta1.Ingress:
+		extractor = annotations.NewExtractor(ing.(*extensionsv1beta1.Ingress).Annotations, ing.(*extensionsv1beta1.Ingress).Namespace, ing.(*extensionsv1beta1.Ingress).Name)
+		fmt.Printf("%T", v)
+	case *configv1.ApisixRoute:
+		extractor = annotations.NewExtractor(ing.(*configv1.ApisixRoute).Annotations, ing.(*configv1.ApisixRoute).Namespace, ing.(*configv1.ApisixRoute).Name)
+		fmt.Printf("%T", v)
+	default:
+		log.Error("unknown type")
+		return nil
+	}
+
 	return &extractor{
 		annotations: annotations,
+		namespace:   namespace,
+		name:        name,
+		port:        port,
 	}
 }

@@ -23,6 +23,9 @@ import (
 )
 
 func TestCorsHandler(t *testing.T) {
+	namespace := "namespace"
+	name := "name"
+	port := 8080
 	annotations := map[string]string{
 		_enableCors:       "true",
 		_corsAllowHeaders: "abc,def",
@@ -30,7 +33,7 @@ func TestCorsHandler(t *testing.T) {
 		_corsAllowMethods: "GET,HEAD",
 	}
 	p := NewCorsHandler()
-	out, err := p.Handle(NewExtractor(annotations))
+	out, err := p.Handle(NewExtractor(annotations, namespace, name, port))
 	assert.Nil(t, err, "checking given error")
 	config := out.(*apisixv1.CorsConfig)
 	assert.Equal(t, config.AllowHeaders, "abc,def")
@@ -40,7 +43,7 @@ func TestCorsHandler(t *testing.T) {
 	assert.Equal(t, p.PluginName(), "cors")
 
 	annotations[_enableCors] = "false"
-	out, err = p.Handle(NewExtractor(annotations))
+	out, err = p.Handle(NewExtractor(annotations, namespace, name, port))
 	assert.Nil(t, err, "checking given error")
 	assert.Nil(t, out, "checking given output")
 }

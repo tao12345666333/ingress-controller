@@ -23,11 +23,14 @@ import (
 )
 
 func TestIPRestrictionHandler(t *testing.T) {
+	namespace := "namespace"
+	name := "name"
+	port := 8080
 	annotations := map[string]string{
 		_allowlistSourceRange: "10.2.2.2,192.168.0.0/16",
 	}
 	p := NewIPRestrictionHandler()
-	out, err := p.Handle(NewExtractor(annotations))
+	out, err := p.Handle(NewExtractor(annotations, namespace, name, port))
 	assert.Nil(t, err, "checking given error")
 	config := out.(*apisixv1.IPRestrictConfig)
 	assert.Len(t, config.Whitelist, 2, "checking size of white list")
@@ -37,7 +40,7 @@ func TestIPRestrictionHandler(t *testing.T) {
 	assert.Equal(t, p.PluginName(), "ip-restriction")
 
 	delete(annotations, _allowlistSourceRange)
-	out, err = p.Handle(NewExtractor(annotations))
+	out, err = p.Handle(NewExtractor(annotations, namespace, name, port))
 	assert.Nil(t, err, "checking given error")
 	assert.Nil(t, out, "checking the given ip-restrction plugin config")
 }

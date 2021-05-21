@@ -33,7 +33,7 @@ func (t *translator) translateIngressV1(ing *networkingv1.Ingress) (*TranslateCo
 	ctx := &TranslateContext{
 		upstreamMap: make(map[string]struct{}),
 	}
-	plugins := t.translateAnnotations(ing.Annotations)
+	plugins := t.translateAnnotations(ing)
 
 	for _, rule := range ing.Spec.Rules {
 		for _, pathRule := range rule.HTTP.Paths {
@@ -92,7 +92,7 @@ func (t *translator) translateIngressV1beta1(ing *networkingv1beta1.Ingress) (*T
 	ctx := &TranslateContext{
 		upstreamMap: make(map[string]struct{}),
 	}
-	plugins := t.translateAnnotations(ing.Annotations)
+	plugins := t.translateAnnotations(ing)
 
 	for _, rule := range ing.Spec.Rules {
 		for _, pathRule := range rule.HTTP.Paths {
@@ -182,7 +182,7 @@ func (t *translator) translateIngressExtensionsV1beta1(ing *extensionsv1beta1.In
 	ctx := &TranslateContext{
 		upstreamMap: make(map[string]struct{}),
 	}
-	plugins := t.translateAnnotations(ing.Annotations)
+	plugins := t.translateAnnotations(ing)
 
 	for _, rule := range ing.Spec.Rules {
 		for _, pathRule := range rule.HTTP.Paths {

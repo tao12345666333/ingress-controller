@@ -15,11 +15,16 @@
 package translation
 
 import (
-	"go.uber.org/zap"
+	"fmt"
 
+	configv1 "github.com/apache/apisix-ingress-controller/pkg/kube/apisix/apis/config/v1"
 	"github.com/apache/apisix-ingress-controller/pkg/kube/translation/annotations"
 	"github.com/apache/apisix-ingress-controller/pkg/log"
 	apisix "github.com/apache/apisix-ingress-controller/pkg/types/apisix/v1"
+	"go.uber.org/zap"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
+	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 )
 
 var (
@@ -29,8 +34,26 @@ var (
 	}
 )
 
-func (t *translator) translateAnnotations(anno map[string]string) apisix.Plugins {
-	extractor := annotations.NewExtractor(anno)
+func (t *translator) translateAnnotations(ing interface{}) apisix.Plugins {
+	var extractor annotations.Extractor
+	switch v := ing.(type) {
+	case *networkingv1.Ingress:
+		extractor = annotations.NewExtractor(ing.(*networkingv1.Ingress).Annotations, ing.(*networkingv1.Ingress).Namespace, ing.(*networkingv1.Ingress).Name)
+		fmt.Printf("%T", v)
+	case *networkingv1beta1.Ingress:
+		extractor = annotations.NewExtractor(ing.(*networkingv1beta1.Ingress).Annotations, ing.(*networkingv1beta1.Ingress).Namespace, ing.(*networkingv1beta1.Ingress).Name)
+		fmt.Printf("%T", v)
+	case *extensionsv1beta1.Ingress:
+		extractor = annotations.NewExtractor(ing.(*extensionsv1beta1.Ingress).Annotations, ing.(*extensionsv1beta1.Ingress).Namespace, ing.(*extensionsv1beta1.Ingress).Name)
+		fmt.Printf("%T", v)
+	case *configv1.ApisixRoute:
+		extractor = annotations.NewExtractor(ing.(*configv1.ApisixRoute).Annotations, ing.(*configv1.ApisixRoute).Namespace, ing.(*configv1.ApisixRoute).Name)
+		fmt.Printf("%T", v)
+	default:
+		log.Error("unknown type")
+		return nil
+	}
+
 	plugins := make(apisix.Plugins)
 	for _, handler := range _handlers {
 		out, err := handler.Handle(extractor)
