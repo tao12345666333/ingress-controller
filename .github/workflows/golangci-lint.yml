@@ -22,6 +22,7 @@ on:
   push:
     branches:
       - master
+      - webhook
   pull_request:
     branches:
       - master
