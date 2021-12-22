@@ -18,6 +18,8 @@ require (
 	go.uber.org/zap v1.18.1
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	golang.org/x/sys v0.0.0-20210819072135-bce67f096156 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.1
 	k8s.io/apimachinery v0.22.1
