@@ -83,7 +83,7 @@ endif
 
 ### push-images-to-kind:  Push images used in e2e test suites to kind.
 .PHONY: push-images-to-kind
-push-images-to-kind: kind-up
+push-images-to-kind: build-image kind-up 
 ifeq ($(E2E_SKIP_BUILD), 0)
 	docker pull apache/apisix:dev
 	docker tag apache/apisix:dev $(LOCAL_REGISTRY)/apache/apisix:dev
@@ -101,7 +101,7 @@ ifeq ($(E2E_SKIP_BUILD), 0)
 	docker tag test-backend:$(IMAGE_TAG) $(LOCAL_REGISTRY)/test-backend:$(IMAGE_TAG)
 	docker push $(LOCAL_REGISTRY)/test-backend:$(IMAGE_TAG)
 
-	docker build -t apache/apisix-ingress-controller:$(IMAGE_TAG) --build-arg ENABLE_PROXY=true .
+	# docker build -t apache/apisix-ingress-controller:$(IMAGE_TAG) --build-arg ENABLE_PROXY=true .
 	docker tag apache/apisix-ingress-controller:$(IMAGE_TAG) $(LOCAL_REGISTRY)/apache/apisix-ingress-controller:$(IMAGE_TAG)
 	docker push $(LOCAL_REGISTRY)/apache/apisix-ingress-controller:$(IMAGE_TAG)
 
