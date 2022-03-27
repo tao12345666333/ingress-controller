@@ -462,3 +462,38 @@ func TestMemDBCachePluginConfig(t *testing.T) {
 	}
 	assert.Error(t, ErrNotFound, c.DeletePluginConfig(pc4))
 }
+
+func TestMemDBCacheGetRouteByUpstream(t *testing.T) {
+	r1 := &v1.Route{
+		Metadata: v1.Metadata{
+			Name: "route",
+			ID:   "1",
+		},
+		UpstreamId: "1",
+	}
+	u1 := &v1.Upstream{
+		Metadata: v1.Metadata{
+			ID:   "1",
+			Name: "upstream",
+		},
+	}
+	u2 := &v1.Upstream{
+		Metadata: v1.Metadata{
+			ID:   "2",
+			Name: "upstream",
+		},
+	}
+
+	db, err := NewMemDBCache()
+	assert.Nil(t, err, "NewMemDBCache")
+	assert.Nil(t, db.InsertRoute(r1))
+	assert.Nil(t, db.InsertUpstream(u1))
+	assert.Nil(t, db.InsertUpstream(u2))
+
+	r, err := db.GetRouteByUpstream(u1)
+	assert.Nil(t, err)
+	assert.Equal(t, r1, r)
+
+	_, err = db.GetRouteByUpstream(u2)
+	assert.Equal(t, memdb.ErrNotFound, err)
+}

@@ -42,6 +42,8 @@ type Cache interface {
 
 	// GetRoute finds the route from cache according to the primary index (id).
 	GetRoute(string) (*v1.Route, error)
+	// GetRouteByUpstream finds the route from cache according to the upstream_id.
+	GetRouteByUpstream(*v1.Upstream) (*v1.Route, error)
 	// GetSSL finds the ssl from cache according to the primary index (id).
 	GetSSL(string) (*v1.Ssl, error)
 	// GetUpstream finds the upstream from cache according to the primary index (id).

@@ -96,6 +96,21 @@ func (c *dbCache) GetRoute(id string) (*v1.Route, error) {
 	return obj.(*v1.Route).DeepCopy(), nil
 }
 
+func (c *dbCache) GetRouteByUpstream(u *v1.Upstream) (*v1.Route, error) {
+	txn := c.db.Txn(false)
+	defer txn.Abort()
+	obj, err := txn.First("route", "upstream_id", u.ID)
+	if err != nil && err != memdb.ErrNotFound {
+		return nil, err
+	}
+
+	if obj == nil {
+		return nil, ErrNotFound
+	}
+
+	return obj.(*v1.Route).DeepCopy(), nil
+}
+
 func (c *dbCache) GetSSL(id string) (*v1.Ssl, error) {
 	obj, err := c.get("ssl", id)
 	if err != nil {

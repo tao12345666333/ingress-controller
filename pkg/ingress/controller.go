@@ -302,7 +302,7 @@ func (c *Controller) recorderEvent(object runtime.Object, eventtype, reason stri
 	}
 }
 
-// recorderEvent recorder events for resources
+// recorderEventS recorder events for resources
 func (c *Controller) recorderEventS(object runtime.Object, eventtype, reason string, msg string) {
 	c.recorder.Event(object, eventtype, reason, msg)
 }
@@ -603,10 +603,10 @@ func (c *Controller) syncEndpoint(ctx context.Context, ep kube.Endpoint) error {
 	svc, err := c.svcLister.Services(ep.Namespace()).Get(svcName)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
-			log.Infof("service %s/%s not found", ep.Namespace(), svcName)
+			log.Infof("service %s/%s not found", namespace, svcName)
 			return nil
 		}
-		log.Errorf("failed to get service %s/%s: %s", ep.Namespace(), svcName, err)
+		log.Errorf("failed to get service %s/%s: %s", namespace, svcName, err)
 		return err
 	}
 	var subsets []configv2beta3.ApisixUpstreamSubset
@@ -614,7 +614,7 @@ func (c *Controller) syncEndpoint(ctx context.Context, ep kube.Endpoint) error {
 	au, err := c.apisixUpstreamLister.ApisixUpstreams(namespace).Get(svcName)
 	if err != nil {
 		if !k8serrors.IsNotFound(err) {
-			log.Errorf("failed to get ApisixUpstream %s/%s: %s", ep.Namespace(), svcName, err)
+			log.Errorf("failed to get ApisixUpstream %s/%s: %s", namespace, svcName, err)
 			return err
 		}
 	} else if au.Spec != nil && len(au.Spec.Subsets) > 0 {
@@ -654,19 +654,56 @@ func (c *Controller) syncUpstreamNodesChangeToCluster(ctx context.Context, clust
 			return nil
 		} else {
 			log.Errorw("failed to get upstream",
-				zap.String("upstream", upsName),
 				zap.String("cluster", cluster.String()),
+				zap.String("upstream", upsName),
 				zap.Error(err),
 			)
 			return err
 		}
 	}
 
+	//route, err := apisixcache.GetRouteByUpstream(upstream)
+	//if err != nil {
+	//log.Errorw("failed to get route by upstream",
+	//zap.String("cluster", cluster.String()),
+	//zap.String("upstream", upsName),
+	//zap.Error(err),
+	//)
+	//return err
+	//}
+
+	//if route != nil && route.Name != nil {
+	//extractInfo := strings.Split(route.Name, "_")
+	//ns := extractInfo[0]
+	//name := extractInfo[1]
+	//if len(extractInfo) > 2 {
+	//ar, err := c.apisixRouteLister.V2beta3(ns, name)
+	//if err != nil {
+	//if !k8serrors.IsNotFound(err) {
+	//log.Errorw("failed to get ApisixRoute",
+	//zap.String("namespace", ns),
+	//zap.String("name", name),
+	//zap.Error(err),
+	//)
+	//return err
+	//}
+	//}
+	//for _, r := range ar.Spec.HTTP {
+	//for _, b := range r {
+	//if b.ResolveGranularity == "service" {
+	//return nil
+	//}
+	//}
+
+	//}
+	//}
+	//}
+
 	upstream.Nodes = nodes
 
 	log.Debugw("upstream binds new nodes",
-		zap.Any("upstream", upstream),
 		zap.String("cluster", cluster.String()),
+		zap.Any("upstream", upstream),
 	)
 
 	updated := &manifest{
