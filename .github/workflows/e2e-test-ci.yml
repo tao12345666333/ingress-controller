@@ -186,6 +186,9 @@ jobs:
           pigz -dc docker.tar.gz | docker load
           make push-images
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run E2E test suite
         shell: bash
         env:
